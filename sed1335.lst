@@ -1,0 +1,887 @@
+   1               		.file	"sed1335.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.global __do_copy_data
+   8               		.global __do_clear_bss
+  16               	.Ltext0:
+  17               	.global	GLCD_GetCursorAddress
+  19               	GLCD_GetCursorAddress:
+  20               	.LFB8:
+  21               	.LM1:
+  22               	/* prologue: frame size=0 */
+  23 0000 1F93      		push r17
+  24               	/* prologue end (size=1) */
+  25               	.LM2:
+  26 0002 87E4      		ldi r24,lo8(71)
+  27 0004 0E94 0000 		call GLCD_WriteCommand
+  28               	.LM3:
+  29 0008 0E94 0000 		call GLCD_ReadData
+  30 000c 182F      		mov r17,r24
+  31               	.LM4:
+  32 000e 0E94 0000 		call GLCD_ReadData
+  33 0012 9927      		clr r25
+  34 0014 982F      		mov r25,r24
+  35 0016 8827      		clr r24
+  36               	.LM5:
+  37 0018 810F      		add r24,r17
+  38 001a 911D      		adc r25,__zero_reg__
+  39               	/* epilogue: frame size=0 */
+  40 001c 1F91      		pop r17
+  41 001e 0895      		ret
+  42               	/* epilogue end (size=2) */
+  43               	/* function GLCD_GetCursorAddress size 16 (13) */
+  44               	.LFE8:
+  46               	.global	GLCD_SetCursorAddress
+  48               	GLCD_SetCursorAddress:
+  49               	.LFB7:
+  50               	.LM6:
+  51               	/* prologue: frame size=0 */
+  52 0020 0F93      		push r16
+  53 0022 1F93      		push r17
+  54               	/* prologue end (size=2) */
+  55               	.LVL0:
+  56 0024 8C01      		movw r16,r24
+  57               	.LM7:
+  58 0026 86E4      		ldi r24,lo8(70)
+  59               	.LVL1:
+  60 0028 0E94 0000 		call GLCD_WriteCommand
+  61               	.LM8:
+  62 002c 802F      		mov r24,r16
+  63 002e 0E94 0000 		call GLCD_WriteData
+  64               	.LM9:
+  65 0032 012F      		mov r16,r17
+  66 0034 1127      		clr r17
+  67               	.LVL2:
+  68 0036 802F      		mov r24,r16
+  69 0038 0E94 0000 		call GLCD_WriteData
+  70               	/* epilogue: frame size=0 */
+  71 003c 1F91      		pop r17
+  72 003e 0F91      		pop r16
+  73 0040 0895      		ret
+  74               	/* epilogue end (size=3) */
+  75               	/* function GLCD_SetCursorAddress size 17 (12) */
+  76               	.LFE7:
+  78               	.global	GLCD_ClearGraphic
+  80               	GLCD_ClearGraphic:
+  81               	.LFB12:
+  82               	.LM10:
+  83               	/* prologue: frame size=0 */
+  84 0042 CF93      		push r28
+  85 0044 DF93      		push r29
+  86               	/* prologue end (size=2) */
+  87               	.LM11:
+  88 0046 80EB      		ldi r24,lo8(1200)
+  89 0048 94E0      		ldi r25,hi8(1200)
+  90 004a 0E94 0000 		call GLCD_SetCursorAddress
+  91               	.LM12:
+  92 004e 82E4      		ldi r24,lo8(66)
+  93 0050 0E94 0000 		call GLCD_WriteCommand
+  94 0054 C0E0      		ldi r28,lo8(0)
+  95 0056 D0E0      		ldi r29,hi8(0)
+  96               	.LVL3:
+  97               	.L6:
+  98               	.LM13:
+  99 0058 80E0      		ldi r24,lo8(0)
+ 100 005a 0E94 0000 		call GLCD_WriteData
+ 101               	.LM14:
+ 102 005e 2196      		adiw r28,1
+ 103 0060 85E2      		ldi r24,hi8(9600)
+ 104 0062 C038      		cpi r28,lo8(9600)
+ 105 0064 D807      		cpc r29,r24
+ 106 0066 01F4      		brne .L6
+ 107               	/* epilogue: frame size=0 */
+ 108 0068 DF91      		pop r29
+ 109 006a CF91      		pop r28
+ 110 006c 0895      		ret
+ 111               	/* epilogue end (size=3) */
+ 112               	/* function GLCD_ClearGraphic size 22 (17) */
+ 113               	.LFE12:
+ 115               	.global	GLCD_GraphicGoTo
+ 117               	GLCD_GraphicGoTo:
+ 118               	.LFB10:
+ 119               	.LM15:
+ 120               	/* prologue: frame size=0 */
+ 121               	/* prologue end (size=0) */
+ 122               	.LVL4:
+ 123               	.LM16:
+ 124 006e 43E0      		ldi r20,3
+ 125 0070 9695      	1:	lsr r25
+ 126 0072 8795      		ror r24
+ 127 0074 4A95      		dec r20
+ 128 0076 01F4      		brne 1b
+ 129               	.LVL5:
+ 130 0078 8055      		subi r24,lo8(-(1200))
+ 131 007a 9B4F      		sbci r25,hi8(-(1200))
+ 132 007c 28E2      		ldi r18,lo8(40)
+ 133 007e 30E0      		ldi r19,hi8(40)
+ 134 0080 A901      		movw r20,r18
+ 135 0082 649F      		mul r22,r20
+ 136 0084 9001      		movw r18,r0
+ 137 0086 659F      		mul r22,r21
+ 138 0088 300D      		add r19,r0
+ 139 008a 749F      		mul r23,r20
+ 140 008c 300D      		add r19,r0
+ 141 008e 1124      		clr r1
+ 142 0090 820F      		add r24,r18
+ 143 0092 931F      		adc r25,r19
+ 144 0094 0E94 0000 		call GLCD_SetCursorAddress
+ 145               	.LVL6:
+ 146               	/* epilogue: frame size=0 */
+ 147 0098 0895      		ret
+ 148               	/* epilogue end (size=1) */
+ 149               	/* function GLCD_GraphicGoTo size 22 (21) */
+ 150               	.LFE10:
+ 152               	.global	GLCD_TextGoTo
+ 154               	GLCD_TextGoTo:
+ 155               	.LFB9:
+ 156               	.LM17:
+ 157               	/* prologue: frame size=0 */
+ 158               	/* prologue end (size=0) */
+ 159               	.LVL7:
+ 160               	.LM18:
+ 161 009a 98E2      		ldi r25,lo8(40)
+ 162 009c 699F      		mul r22,r25
+ 163 009e B001      		movw r22,r0
+ 164 00a0 1124      		clr r1
+ 165               	.LVL8:
+ 166 00a2 680F      		add r22,r24
+ 167 00a4 711D      		adc r23,__zero_reg__
+ 168 00a6 CB01      		movw r24,r22
+ 169               	.LVL9:
+ 170 00a8 0E94 0000 		call GLCD_SetCursorAddress
+ 171               	/* epilogue: frame size=0 */
+ 172 00ac 0895      		ret
+ 173               	/* epilogue end (size=1) */
+ 174               	/* function GLCD_TextGoTo size 10 (9) */
+ 175               	.LFE9:
+ 177               	.global	GLCD_Scroll
+ 179               	GLCD_Scroll:
+ 180               	.LFB13:
+ 181               	.LM19:
+ 182               	/* prologue: frame size=40 */
+ 183 00ae 4F92      		push r4
+ 184 00b0 5F92      		push r5
+ 185 00b2 6F92      		push r6
+ 186 00b4 7F92      		push r7
+ 187 00b6 8F92      		push r8
+ 188 00b8 9F92      		push r9
+ 189 00ba BF92      		push r11
+ 190 00bc CF92      		push r12
+ 191 00be DF92      		push r13
+ 192 00c0 EF92      		push r14
+ 193 00c2 FF92      		push r15
+ 194 00c4 0F93      		push r16
+ 195 00c6 1F93      		push r17
+ 196 00c8 CF93      		push r28
+ 197 00ca DF93      		push r29
+ 198 00cc CDB7      		in r28,__SP_L__
+ 199 00ce DEB7      		in r29,__SP_H__
+ 200 00d0 A897      		sbiw r28,40
+ 201 00d2 0FB6      		in __tmp_reg__,__SREG__
+ 202 00d4 F894      		cli
+ 203 00d6 DEBF      		out __SP_H__,r29
+ 204 00d8 0FBE      		out __SREG__,__tmp_reg__
+ 205 00da CDBF      		out __SP_L__,r28
+ 206               	/* prologue end (size=23) */
+ 207 00dc CC24      		clr r12
+ 208 00de DD24      		clr r13
+ 209               	.LVL10:
+ 210               	.LM20:
+ 211 00e0 4E01      		movw r8,r28
+ 212 00e2 0894      		sec
+ 213 00e4 811C      		adc r8,__zero_reg__
+ 214 00e6 911C      		adc r9,__zero_reg__
+ 215 00e8 2401      		movw r4,r8
+ 216               	.LM21:
+ 217 00ea 59E2      		ldi r21,lo8(41)
+ 218 00ec 652E      		mov r6,r21
+ 219 00ee 712C      		mov r7,__zero_reg__
+ 220 00f0 6C0E      		add r6,r28
+ 221 00f2 7D1E      		adc r7,r29
+ 222               	.L16:
+ 223               	.LM22:
+ 224 00f4 BC2C      		mov r11,r12
+ 225               	.LM23:
+ 226 00f6 6C2D      		mov r22,r12
+ 227               	.LVL11:
+ 228 00f8 6F5F      		subi r22,lo8(-(1))
+ 229 00fa 80E0      		ldi r24,lo8(0)
+ 230 00fc 0E94 0000 		call GLCD_TextGoTo
+ 231               	.LM24:
+ 232 0100 83E4      		ldi r24,lo8(67)
+ 233 0102 0E94 0000 		call GLCD_WriteCommand
+ 234 0106 7201      		movw r14,r4
+ 235 0108 8401      		movw r16,r8
+ 236               	.L17:
+ 237               	.LM25:
+ 238 010a 0E94 0000 		call GLCD_ReadData
+ 239 010e F801      		movw r30,r16
+ 240 0110 8193      		st Z+,r24
+ 241 0112 8F01      		movw r16,r30
+ 242               	.LM26:
+ 243 0114 E615      		cp r30,r6
+ 244 0116 F705      		cpc r31,r7
+ 245 0118 01F4      		brne .L17
+ 246               	.LM27:
+ 247 011a 6B2D      		mov r22,r11
+ 248 011c 80E0      		ldi r24,lo8(0)
+ 249 011e 0E94 0000 		call GLCD_TextGoTo
+ 250               	.LM28:
+ 251 0122 82E4      		ldi r24,lo8(66)
+ 252 0124 0E94 0000 		call GLCD_WriteCommand
+ 253               	.L19:
+ 254               	.LM29:
+ 255 0128 F701      		movw r30,r14
+ 256 012a 8191      		ld r24,Z+
+ 257 012c 7F01      		movw r14,r30
+ 258 012e 0E94 0000 		call GLCD_WriteData
+ 259               	.LM30:
+ 260 0132 E016      		cp r14,r16
+ 261 0134 F106      		cpc r15,r17
+ 262 0136 01F4      		brne .L19
+ 263               	.LM31:
+ 264 0138 0894      		sec
+ 265 013a C11C      		adc r12,__zero_reg__
+ 266 013c D11C      		adc r13,__zero_reg__
+ 267               	.LVL12:
+ 268 013e FBE1      		ldi r31,lo8(27)
+ 269 0140 CF16      		cp r12,r31
+ 270 0142 D104      		cpc r13,__zero_reg__
+ 271 0144 01F4      		brne .L16
+ 272               	.LM32:
+ 273 0146 6BE1      		ldi r22,lo8(27)
+ 274 0148 80E0      		ldi r24,lo8(0)
+ 275 014a 0E94 0000 		call GLCD_TextGoTo
+ 276               	.LM33:
+ 277 014e 82E4      		ldi r24,lo8(66)
+ 278 0150 0E94 0000 		call GLCD_WriteCommand
+ 279 0154 00E0      		ldi r16,lo8(0)
+ 280 0156 10E0      		ldi r17,hi8(0)
+ 281               	.LVL13:
+ 282               	.L22:
+ 283               	.LM34:
+ 284 0158 80E2      		ldi r24,lo8(32)
+ 285 015a 0E94 0000 		call GLCD_WriteData
+ 286               	.LM35:
+ 287 015e 0F5F      		subi r16,lo8(-(1))
+ 288 0160 1F4F      		sbci r17,hi8(-(1))
+ 289 0162 0035      		cpi r16,80
+ 290 0164 1105      		cpc r17,__zero_reg__
+ 291 0166 01F4      		brne .L22
+ 292               	/* epilogue: frame size=40 */
+ 293 0168 A896      		adiw r28,40
+ 294 016a 0FB6      		in __tmp_reg__,__SREG__
+ 295 016c F894      		cli
+ 296 016e DEBF      		out __SP_H__,r29
+ 297 0170 0FBE      		out __SREG__,__tmp_reg__
+ 298 0172 CDBF      		out __SP_L__,r28
+ 299 0174 DF91      		pop r29
+ 300 0176 CF91      		pop r28
+ 301 0178 1F91      		pop r17
+ 302 017a 0F91      		pop r16
+ 303 017c FF90      		pop r15
+ 304 017e EF90      		pop r14
+ 305 0180 DF90      		pop r13
+ 306 0182 CF90      		pop r12
+ 307 0184 BF90      		pop r11
+ 308 0186 9F90      		pop r9
+ 309 0188 8F90      		pop r8
+ 310 018a 7F90      		pop r7
+ 311 018c 6F90      		pop r6
+ 312 018e 5F90      		pop r5
+ 313 0190 4F90      		pop r4
+ 314 0192 0895      		ret
+ 315               	/* epilogue end (size=22) */
+ 316               	/* function GLCD_Scroll size 115 (70) */
+ 317               	.LFE13:
+ 319               	.global	GLCD_NewLine
+ 321               	GLCD_NewLine:
+ 322               	.LFB15:
+ 323               	.LM36:
+ 324               	/* prologue: frame size=0 */
+ 325 0194 0F93      		push r16
+ 326 0196 1F93      		push r17
+ 327               	/* prologue end (size=2) */
+ 328               	.LM37:
+ 329 0198 8430      		cpi r24,lo8(4)
+ 330               	.LVL14:
+ 331 019a 00F0      		brlo .L34
+ 332               	.LM38:
+ 333 019c 8136      		cpi r24,lo8(97)
+ 334               	.LVL15:
+ 335 019e 00F0      		brlo .L34
+ 336               	.LM39:
+ 337 01a0 0E94 0000 		call GLCD_Scroll
+ 338               	.LVL16:
+ 339               	.LM40:
+ 340 01a4 6CE1      		ldi r22,lo8(28)
+ 341 01a6 80E0      		ldi r24,lo8(0)
+ 342 01a8 0E94 0000 		call GLCD_TextGoTo
+ 343 01ac 00C0      		rjmp .L38
+ 344               	.LVL17:
+ 345               	.L34:
+ 346               	.LM41:
+ 347 01ae 87E4      		ldi r24,lo8(71)
+ 348               	.LVL18:
+ 349 01b0 0E94 0000 		call GLCD_WriteCommand
+ 350               	.LM42:
+ 351 01b4 0E94 0000 		call GLCD_ReadData
+ 352 01b8 182F      		mov r17,r24
+ 353               	.LVL19:
+ 354               	.LM43:
+ 355 01ba 0E94 0000 		call GLCD_ReadData
+ 356 01be 082F      		mov r16,r24
+ 357               	.LVL20:
+ 358               	.LM44:
+ 359 01c0 812F      		mov r24,r17
+ 360 01c2 68E2      		ldi r22,lo8(40)
+ 361 01c4 0E94 0000 		call __udivmodqi4
+ 362 01c8 98E2      		ldi r25,lo8(40)
+ 363 01ca 899F      		mul r24,r25
+ 364 01cc 102D      		mov r17,r0
+ 365 01ce 1124      		clr r1
+ 366               	.LVL21:
+ 367               	.LM45:
+ 368 01d0 86E4      		ldi r24,lo8(70)
+ 369 01d2 0E94 0000 		call GLCD_WriteCommand
+ 370               	.LM46:
+ 371 01d6 812F      		mov r24,r17
+ 372 01d8 885D      		subi r24,lo8(-(40))
+ 373 01da 0E94 0000 		call GLCD_WriteData
+ 374               	.LM47:
+ 375 01de 802F      		mov r24,r16
+ 376 01e0 0E94 0000 		call GLCD_WriteData
+ 377               	.L38:
+ 378               	/* epilogue: frame size=0 */
+ 379 01e4 1F91      		pop r17
+ 380 01e6 0F91      		pop r16
+ 381 01e8 0895      		ret
+ 382               	/* epilogue end (size=3) */
+ 383               	/* function GLCD_NewLine size 43 (38) */
+ 384               	.LFE15:
+ 386               	.global	GLCD_ClearText
+ 388               	GLCD_ClearText:
+ 389               	.LFB11:
+ 390               	.LM48:
+ 391               	/* prologue: frame size=0 */
+ 392 01ea CF93      		push r28
+ 393 01ec DF93      		push r29
+ 394               	/* prologue end (size=2) */
+ 395               	.LM49:
+ 396 01ee 60E0      		ldi r22,lo8(0)
+ 397 01f0 80E0      		ldi r24,lo8(0)
+ 398 01f2 0E94 0000 		call GLCD_TextGoTo
+ 399               	.LM50:
+ 400 01f6 82E4      		ldi r24,lo8(66)
+ 401 01f8 0E94 0000 		call GLCD_WriteCommand
+ 402 01fc C0E0      		ldi r28,lo8(0)
+ 403 01fe D0E0      		ldi r29,hi8(0)
+ 404               	.LVL22:
+ 405               	.L40:
+ 406               	.LM51:
+ 407 0200 80E2      		ldi r24,lo8(32)
+ 408 0202 0E94 0000 		call GLCD_WriteData
+ 409               	.LM52:
+ 410 0206 2196      		adiw r28,1
+ 411 0208 84E0      		ldi r24,hi8(1200)
+ 412 020a C03B      		cpi r28,lo8(1200)
+ 413 020c D807      		cpc r29,r24
+ 414 020e 01F4      		brne .L40
+ 415               	/* epilogue: frame size=0 */
+ 416 0210 DF91      		pop r29
+ 417 0212 CF91      		pop r28
+ 418 0214 0895      		ret
+ 419               	/* epilogue end (size=3) */
+ 420               	/* function GLCD_ClearText size 22 (17) */
+ 421               	.LFE11:
+ 423               	.global	GLCD_WriteText
+ 425               	GLCD_WriteText:
+ 426               	.LFB4:
+ 427               	.LM53:
+ 428               	/* prologue: frame size=0 */
+ 429 0216 CF93      		push r28
+ 430 0218 DF93      		push r29
+ 431               	/* prologue end (size=2) */
+ 432               	.LVL23:
+ 433 021a EC01      		movw r28,r24
+ 434               	.LM54:
+ 435 021c 82E4      		ldi r24,lo8(66)
+ 436               	.LVL24:
+ 437 021e 0E94 0000 		call GLCD_WriteCommand
+ 438 0222 00C0      		rjmp .L46
+ 439               	.L47:
+ 440               	.LM55:
+ 441 0224 2196      		adiw r28,1
+ 442 0226 0E94 0000 		call GLCD_WriteData
+ 443               	.L46:
+ 444               	.LM56:
+ 445 022a 8881      		ld r24,Y
+ 446 022c 8823      		tst r24
+ 447 022e 01F4      		brne .L47
+ 448               	/* epilogue: frame size=0 */
+ 449 0230 DF91      		pop r29
+ 450 0232 CF91      		pop r28
+ 451 0234 0895      		ret
+ 452               	/* epilogue end (size=3) */
+ 453               	/* function GLCD_WriteText size 16 (11) */
+ 454               	.LFE4:
+ 456               	.global	GLCD_SetPixel
+ 458               	GLCD_SetPixel:
+ 459               	.LFB3:
+ 460               	.LM57:
+ 461               	/* prologue: frame size=0 */
+ 462 0236 EF92      		push r14
+ 463 0238 FF92      		push r15
+ 464 023a 0F93      		push r16
+ 465 023c 1F93      		push r17
+ 466 023e CF93      		push r28
+ 467 0240 DF93      		push r29
+ 468               	/* prologue end (size=6) */
+ 469               	.LVL25:
+ 470 0242 8C01      		movw r16,r24
+ 471 0244 7A01      		movw r14,r20
+ 472               	.LM58:
+ 473 0246 EC01      		movw r28,r24
+ 474               	.LVL26:
+ 475 0248 E3E0      		ldi r30,3
+ 476 024a D695      	1:	lsr r29
+ 477 024c C795      		ror r28
+ 478 024e EA95      		dec r30
+ 479 0250 01F4      		brne 1b
+ 480 0252 C055      		subi r28,lo8(-(1200))
+ 481 0254 DB4F      		sbci r29,hi8(-(1200))
+ 482 0256 88E2      		ldi r24,lo8(40)
+ 483 0258 90E0      		ldi r25,hi8(40)
+ 484               	.LVL27:
+ 485 025a 9C01      		movw r18,r24
+ 486 025c 629F      		mul r22,r18
+ 487 025e C001      		movw r24,r0
+ 488 0260 639F      		mul r22,r19
+ 489 0262 900D      		add r25,r0
+ 490 0264 729F      		mul r23,r18
+ 491 0266 900D      		add r25,r0
+ 492 0268 1124      		clr r1
+ 493 026a C80F      		add r28,r24
+ 494 026c D91F      		adc r29,r25
+ 495               	.LM59:
+ 496 026e CE01      		movw r24,r28
+ 497 0270 0E94 0000 		call GLCD_SetCursorAddress
+ 498               	.LVL28:
+ 499               	.LM60:
+ 500 0274 83E4      		ldi r24,lo8(67)
+ 501 0276 0E94 0000 		call GLCD_WriteCommand
+ 502               	.LM61:
+ 503 027a 0E94 0000 		call GLCD_ReadData
+ 504 027e 482F      		mov r20,r24
+ 505               	.LVL29:
+ 506 0280 9801      		movw r18,r16
+ 507 0282 2095      		com r18
+ 508 0284 3095      		com r19
+ 509               	.LM62:
+ 510 0286 EF28      		or r14,r15
+ 511 0288 01F0      		breq .L51
+ 512               	.LM63:
+ 513 028a 2770      		andi r18,lo8(7)
+ 514 028c 3070      		andi r19,hi8(7)
+ 515 028e 81E0      		ldi r24,lo8(1)
+ 516 0290 90E0      		ldi r25,hi8(1)
+ 517 0292 00C0      		rjmp 2f
+ 518 0294 880F      	1:	lsl r24
+ 519 0296 991F      		rol r25
+ 520 0298 2A95      	2:	dec r18
+ 521 029a 02F4      		brpl 1b
+ 522 029c 042F      		mov r16,r20
+ 523               	.LVL30:
+ 524 029e 082B      		or r16,r24
+ 525               	.LVL31:
+ 526 02a0 00C0      		rjmp .L53
+ 527               	.LVL32:
+ 528               	.L51:
+ 529               	.LM64:
+ 530 02a2 2770      		andi r18,lo8(7)
+ 531 02a4 3070      		andi r19,hi8(7)
+ 532 02a6 81E0      		ldi r24,lo8(1)
+ 533 02a8 90E0      		ldi r25,hi8(1)
+ 534 02aa 00C0      		rjmp 2f
+ 535 02ac 880F      	1:	lsl r24
+ 536 02ae 991F      		rol r25
+ 537 02b0 2A95      	2:	dec r18
+ 538 02b2 02F4      		brpl 1b
+ 539 02b4 082F      		mov r16,r24
+ 540               	.LVL33:
+ 541 02b6 0095      		com r16
+ 542 02b8 0423      		and r16,r20
+ 543               	.L53:
+ 544               	.LM65:
+ 545 02ba CE01      		movw r24,r28
+ 546 02bc 0E94 0000 		call GLCD_SetCursorAddress
+ 547               	.LM66:
+ 548 02c0 82E4      		ldi r24,lo8(66)
+ 549 02c2 0E94 0000 		call GLCD_WriteCommand
+ 550               	.LM67:
+ 551 02c6 802F      		mov r24,r16
+ 552 02c8 0E94 0000 		call GLCD_WriteData
+ 553               	/* epilogue: frame size=0 */
+ 554 02cc DF91      		pop r29
+ 555 02ce CF91      		pop r28
+ 556 02d0 1F91      		pop r17
+ 557 02d2 0F91      		pop r16
+ 558 02d4 FF90      		pop r15
+ 559 02d6 EF90      		pop r14
+ 560 02d8 0895      		ret
+ 561               	/* epilogue end (size=7) */
+ 562               	/* function GLCD_SetPixel size 84 (71) */
+ 563               	.LFE3:
+ 565               		.data
+ 566               	.LC0:
+ 567 0000 4552 524F 		.string	"ERROR: Text zu lang"
+ 567      523A 2054 
+ 567      6578 7420 
+ 567      7A75 206C 
+ 567      616E 6700 
+ 568               		.text
+ 569               	.global	GLCD_WriteTextScroll
+ 571               	GLCD_WriteTextScroll:
+ 572               	.LFB14:
+ 573               	.LM68:
+ 574               	/* prologue: frame size=0 */
+ 575 02da CF92      		push r12
+ 576 02dc DF92      		push r13
+ 577 02de EF92      		push r14
+ 578 02e0 FF92      		push r15
+ 579 02e2 0F93      		push r16
+ 580 02e4 1F93      		push r17
+ 581 02e6 CF93      		push r28
+ 582 02e8 DF93      		push r29
+ 583               	/* prologue end (size=8) */
+ 584               	.LVL34:
+ 585 02ea 6C01      		movw r12,r24
+ 586               	.LM69:
+ 587 02ec 87E4      		ldi r24,lo8(71)
+ 588               	.LVL35:
+ 589 02ee 0E94 0000 		call GLCD_WriteCommand
+ 590               	.LM70:
+ 591 02f2 0E94 0000 		call GLCD_ReadData
+ 592 02f6 182F      		mov r17,r24
+ 593               	.LVL36:
+ 594               	.LM71:
+ 595 02f8 0E94 0000 		call GLCD_ReadData
+ 596 02fc 282F      		mov r18,r24
+ 597               	.LVL37:
+ 598               	.LM72:
+ 599 02fe F601      		movw r30,r12
+ 600 0300 0190      		ld __tmp_reg__,Z+
+ 601 0302 0020      		tst __tmp_reg__
+ 602 0304 01F4      		brne .-6
+ 603 0306 3197      		sbiw r30,1
+ 604 0308 CF01      		movw r24,r30
+ 605 030a 8C19      		sub r24,r12
+ 606 030c 9D09      		sbc r25,r13
+ 607 030e 68E2      		ldi r22,lo8(40)
+ 608 0310 70E0      		ldi r23,hi8(40)
+ 609 0312 0E94 0000 		call __udivmodhi4
+ 610 0316 EB01      		movw r28,r22
+ 611               	.LVL38:
+ 612               	.LM73:
+ 613 0318 2430      		cpi r18,lo8(4)
+ 614 031a 00F0      		brlo .L56
+ 615               	.LM74:
+ 616 031c 1136      		cpi r17,lo8(97)
+ 617 031e 00F0      		brlo .L56
+ 618               	.LM75:
+ 619 0320 6330      		cpi r22,3
+ 620 0322 7105      		cpc r23,__zero_reg__
+ 621 0324 00F4      		brsh .L56
+ 622               	.LVL39:
+ 623 0326 00E0      		ldi r16,lo8(0)
+ 624 0328 10E0      		ldi r17,hi8(0)
+ 625               	.LVL40:
+ 626               	.LM76:
+ 627 032a 7B01      		movw r14,r22
+ 628 032c 0894      		sec
+ 629 032e E11C      		adc r14,__zero_reg__
+ 630 0330 F11C      		adc r15,__zero_reg__
+ 631               	.L60:
+ 632               	.LM77:
+ 633 0332 0E94 0000 		call GLCD_Scroll
+ 634               	.LVL41:
+ 635               	.LM78:
+ 636 0336 0F5F      		subi r16,lo8(-(1))
+ 637 0338 1F4F      		sbci r17,hi8(-(1))
+ 638 033a 0E15      		cp r16,r14
+ 639 033c 1F05      		cpc r17,r15
+ 640 033e 01F4      		brne .L60
+ 641               	.LM79:
+ 642 0340 6CE1      		ldi r22,lo8(28)
+ 643 0342 6C1B      		sub r22,r28
+ 644 0344 80E0      		ldi r24,lo8(0)
+ 645 0346 0E94 0000 		call GLCD_TextGoTo
+ 646 034a 00C0      		rjmp .L62
+ 647               	.LVL42:
+ 648               	.L56:
+ 649               	.LM80:
+ 650 034c 2497      		sbiw r28,4
+ 651 034e 00F0      		brlo .L62
+ 652               	.LM81:
+ 653 0350 80E0      		ldi r24,lo8(.LC0)
+ 654 0352 90E0      		ldi r25,hi8(.LC0)
+ 655 0354 00C0      		rjmp .L68
+ 656               	.LVL43:
+ 657               	.L62:
+ 658               	.LM82:
+ 659 0356 C601      		movw r24,r12
+ 660               	.L68:
+ 661 0358 0E94 0000 		call GLCD_WriteText
+ 662               	.LVL44:
+ 663               	/* epilogue: frame size=0 */
+ 664 035c DF91      		pop r29
+ 665 035e CF91      		pop r28
+ 666 0360 1F91      		pop r17
+ 667 0362 0F91      		pop r16
+ 668 0364 FF90      		pop r15
+ 669 0366 EF90      		pop r14
+ 670 0368 DF90      		pop r13
+ 671 036a CF90      		pop r12
+ 672 036c 0895      		ret
+ 673               	/* epilogue end (size=9) */
+ 674               	/* function GLCD_WriteTextScroll size 75 (58) */
+ 675               	.LFE14:
+ 677               	.global	GLCD_WriteTextP
+ 679               	GLCD_WriteTextP:
+ 680               	.LFB6:
+ 681               	.LM83:
+ 682               	/* prologue: frame size=0 */
+ 683 036e 0F93      		push r16
+ 684 0370 1F93      		push r17
+ 685 0372 CF93      		push r28
+ 686 0374 DF93      		push r29
+ 687               	/* prologue end (size=4) */
+ 688               	.LVL45:
+ 689 0376 EC01      		movw r28,r24
+ 690               	.LM84:
+ 691 0378 82E4      		ldi r24,lo8(66)
+ 692               	.LVL46:
+ 693 037a 0E94 0000 		call GLCD_WriteCommand
+ 694 037e 00C0      		rjmp .L70
+ 695               	.LVL47:
+ 696               	.L71:
+ 697               	.LM85:
+ 698 0380 8E01      		movw r16,r28
+ 699 0382 0F5F      		subi r16,lo8(-(1))
+ 700 0384 1F4F      		sbci r17,hi8(-(1))
+ 701               	.LVL48:
+ 702 0386 CE01      		movw r24,r28
+ 703 0388 0E94 0000 		call GLCD_ReadByteFromROMMemory
+ 704 038c 0E94 0000 		call GLCD_WriteData
+ 705 0390 E801      		movw r28,r16
+ 706               	.LVL49:
+ 707               	.L70:
+ 708               	.LM86:
+ 709 0392 CE01      		movw r24,r28
+ 710 0394 0E94 0000 		call GLCD_ReadByteFromROMMemory
+ 711 0398 8823      		tst r24
+ 712 039a 01F4      		brne .L71
+ 713               	/* epilogue: frame size=0 */
+ 714 039c DF91      		pop r29
+ 715 039e CF91      		pop r28
+ 716 03a0 1F91      		pop r17
+ 717 03a2 0F91      		pop r16
+ 718 03a4 0895      		ret
+ 719               	/* epilogue end (size=5) */
+ 720               	/* function GLCD_WriteTextP size 28 (19) */
+ 721               	.LFE6:
+ 723               	.global	GLCD_WriteTextI
+ 725               	GLCD_WriteTextI:
+ 726               	.LFB5:
+ 727               	.LM87:
+ 728               	/* prologue: frame size=7 */
+ 729 03a6 0F93      		push r16
+ 730 03a8 1F93      		push r17
+ 731 03aa CF93      		push r28
+ 732 03ac DF93      		push r29
+ 733 03ae CDB7      		in r28,__SP_L__
+ 734 03b0 DEB7      		in r29,__SP_H__
+ 735 03b2 2797      		sbiw r28,7
+ 736 03b4 0FB6      		in __tmp_reg__,__SREG__
+ 737 03b6 F894      		cli
+ 738 03b8 DEBF      		out __SP_H__,r29
+ 739 03ba 0FBE      		out __SREG__,__tmp_reg__
+ 740 03bc CDBF      		out __SP_L__,r28
+ 741               	/* prologue end (size=12) */
+ 742               	.LVL50:
+ 743               	.LM88:
+ 744 03be 47E0      		ldi r20,lo8(7)
+ 745 03c0 50E0      		ldi r21,hi8(7)
+ 746 03c2 8E01      		movw r16,r28
+ 747 03c4 0F5F      		subi r16,lo8(-(1))
+ 748 03c6 1F4F      		sbci r17,hi8(-(1))
+ 749 03c8 B801      		movw r22,r16
+ 750 03ca 0E94 0000 		call itoa
+ 751               	.LVL51:
+ 752               	.LM89:
+ 753 03ce C801      		movw r24,r16
+ 754 03d0 0E94 0000 		call GLCD_WriteText
+ 755               	/* epilogue: frame size=7 */
+ 756 03d4 2796      		adiw r28,7
+ 757 03d6 0FB6      		in __tmp_reg__,__SREG__
+ 758 03d8 F894      		cli
+ 759 03da DEBF      		out __SP_H__,r29
+ 760 03dc 0FBE      		out __SREG__,__tmp_reg__
+ 761 03de CDBF      		out __SP_L__,r28
+ 762 03e0 DF91      		pop r29
+ 763 03e2 CF91      		pop r28
+ 764 03e4 1F91      		pop r17
+ 765 03e6 0F91      		pop r16
+ 766 03e8 0895      		ret
+ 767               	/* epilogue end (size=11) */
+ 768               	/* function GLCD_WriteTextI size 34 (11) */
+ 769               	.LFE5:
+ 771               	.global	GLCD_Initialize
+ 773               	GLCD_Initialize:
+ 774               	.LFB2:
+ 775               	.LM90:
+ 776               	/* prologue: frame size=0 */
+ 777               	/* prologue end (size=0) */
+ 778               	.LM91:
+ 779 03ea 0E94 0000 		call GLCD_InitPorts
+ 780               	.LM92:
+ 781 03ee 80E4      		ldi r24,lo8(64)
+ 782 03f0 0E94 0000 		call GLCD_WriteCommand
+ 783               	.LM93:
+ 784 03f4 80E3      		ldi r24,lo8(48)
+ 785 03f6 0E94 0000 		call GLCD_WriteData
+ 786               	.LM94:
+ 787 03fa 87E8      		ldi r24,lo8(-121)
+ 788 03fc 0E94 0000 		call GLCD_WriteData
+ 789               	.LM95:
+ 790 0400 87E0      		ldi r24,lo8(7)
+ 791 0402 0E94 0000 		call GLCD_WriteData
+ 792               	.LM96:
+ 793 0406 87E2      		ldi r24,lo8(39)
+ 794 0408 0E94 0000 		call GLCD_WriteData
+ 795               	.LM97:
+ 796 040c 8BE2      		ldi r24,lo8(43)
+ 797 040e 0E94 0000 		call GLCD_WriteData
+ 798               	.LM98:
+ 799 0412 8FEE      		ldi r24,lo8(-17)
+ 800 0414 0E94 0000 		call GLCD_WriteData
+ 801               	.LM99:
+ 802 0418 88E2      		ldi r24,lo8(40)
+ 803 041a 0E94 0000 		call GLCD_WriteData
+ 804               	.LM100:
+ 805 041e 80E0      		ldi r24,lo8(0)
+ 806 0420 0E94 0000 		call GLCD_WriteData
+ 807               	.LM101:
+ 808 0424 84E4      		ldi r24,lo8(68)
+ 809 0426 0E94 0000 		call GLCD_WriteCommand
+ 810               	.LM102:
+ 811 042a 80E0      		ldi r24,lo8(0)
+ 812 042c 0E94 0000 		call GLCD_WriteData
+ 813               	.LM103:
+ 814 0430 80E0      		ldi r24,lo8(0)
+ 815 0432 0E94 0000 		call GLCD_WriteData
+ 816               	.LM104:
+ 817 0436 8FEE      		ldi r24,lo8(-17)
+ 818 0438 0E94 0000 		call GLCD_WriteData
+ 819               	.LM105:
+ 820 043c 80EB      		ldi r24,lo8(-80)
+ 821 043e 0E94 0000 		call GLCD_WriteData
+ 822               	.LM106:
+ 823 0442 84E0      		ldi r24,lo8(4)
+ 824 0444 0E94 0000 		call GLCD_WriteData
+ 825               	.LM107:
+ 826 0448 8FEE      		ldi r24,lo8(-17)
+ 827 044a 0E94 0000 		call GLCD_WriteData
+ 828               	.LM108:
+ 829 044e 80E0      		ldi r24,lo8(0)
+ 830 0450 0E94 0000 		call GLCD_WriteData
+ 831               	.LM109:
+ 832 0454 80E0      		ldi r24,lo8(0)
+ 833 0456 0E94 0000 		call GLCD_WriteData
+ 834               	.LM110:
+ 835 045a 80E0      		ldi r24,lo8(0)
+ 836 045c 0E94 0000 		call GLCD_WriteData
+ 837               	.LM111:
+ 838 0460 80E0      		ldi r24,lo8(0)
+ 839 0462 0E94 0000 		call GLCD_WriteData
+ 840               	.LM112:
+ 841 0466 8DE5      		ldi r24,lo8(93)
+ 842 0468 0E94 0000 		call GLCD_WriteCommand
+ 843               	.LM113:
+ 844 046c 84E0      		ldi r24,lo8(4)
+ 845 046e 0E94 0000 		call GLCD_WriteData
+ 846               	.LM114:
+ 847 0472 87E0      		ldi r24,lo8(7)
+ 848 0474 0E94 0000 		call GLCD_WriteData
+ 849               	.LM115:
+ 850 0478 8CE5      		ldi r24,lo8(92)
+ 851 047a 0E94 0000 		call GLCD_WriteCommand
+ 852               	.LM116:
+ 853 047e 80E0      		ldi r24,lo8(0)
+ 854 0480 0E94 0000 		call GLCD_WriteData
+ 855               	.LM117:
+ 856 0484 80E7      		ldi r24,lo8(112)
+ 857 0486 0E94 0000 		call GLCD_WriteData
+ 858               	.LM118:
+ 859 048a 8CE4      		ldi r24,lo8(76)
+ 860 048c 0E94 0000 		call GLCD_WriteCommand
+ 861               	.LM119:
+ 862 0490 8AE5      		ldi r24,lo8(90)
+ 863 0492 0E94 0000 		call GLCD_WriteCommand
+ 864               	.LM120:
+ 865 0496 80E0      		ldi r24,lo8(0)
+ 866 0498 0E94 0000 		call GLCD_WriteData
+ 867               	.LM121:
+ 868 049c 8BE5      		ldi r24,lo8(91)
+ 869 049e 0E94 0000 		call GLCD_WriteCommand
+ 870               	.LM122:
+ 871 04a2 81E0      		ldi r24,lo8(1)
+ 872 04a4 0E94 0000 		call GLCD_WriteData
+ 873               	.LM123:
+ 874 04a8 89E5      		ldi r24,lo8(89)
+ 875 04aa 0E94 0000 		call GLCD_WriteCommand
+ 876               	.LM124:
+ 877 04ae 86E1      		ldi r24,lo8(22)
+ 878 04b0 0E94 0000 		call GLCD_WriteData
+ 879               	/* epilogue: frame size=0 */
+ 880 04b4 0895      		ret
+ 881               	/* epilogue end (size=1) */
+ 882               	/* function GLCD_Initialize size 102 (101) */
+ 883               	.LFE2:
+ 1013               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 sed1335.c
+     /tmp/ccljeHv4.s:2      *ABS*:0000003f __SREG__
+     /tmp/ccljeHv4.s:3      *ABS*:0000003e __SP_H__
+     /tmp/ccljeHv4.s:4      *ABS*:0000003d __SP_L__
+     /tmp/ccljeHv4.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccljeHv4.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccljeHv4.s:19     .text:00000000 GLCD_GetCursorAddress
+     /tmp/ccljeHv4.s:48     .text:00000020 GLCD_SetCursorAddress
+     /tmp/ccljeHv4.s:80     .text:00000042 GLCD_ClearGraphic
+     /tmp/ccljeHv4.s:117    .text:0000006e GLCD_GraphicGoTo
+     /tmp/ccljeHv4.s:154    .text:0000009a GLCD_TextGoTo
+     /tmp/ccljeHv4.s:179    .text:000000ae GLCD_Scroll
+     /tmp/ccljeHv4.s:321    .text:00000194 GLCD_NewLine
+     /tmp/ccljeHv4.s:388    .text:000001ea GLCD_ClearText
+     /tmp/ccljeHv4.s:425    .text:00000216 GLCD_WriteText
+     /tmp/ccljeHv4.s:458    .text:00000236 GLCD_SetPixel
+     /tmp/ccljeHv4.s:571    .text:000002da GLCD_WriteTextScroll
+     /tmp/ccljeHv4.s:679    .text:0000036e GLCD_WriteTextP
+     /tmp/ccljeHv4.s:725    .text:000003a6 GLCD_WriteTextI
+     /tmp/ccljeHv4.s:773    .text:000003ea GLCD_Initialize
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss
+GLCD_WriteCommand
+GLCD_ReadData
+GLCD_WriteData
+__udivmodqi4
+__udivmodhi4
+GLCD_ReadByteFromROMMemory
+itoa
+GLCD_InitPorts

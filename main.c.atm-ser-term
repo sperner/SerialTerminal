@@ -1,0 +1,603 @@
+/*----------------------------------------------------------------------------
+ Author:         Sven Sperner	<cethss@gmail.com>
+ Remarks:        
+ known Problems: 
+ Version:        28.06.2009
+ Description:    Serial Console/Terminal to LCD-Adapter
+		 connect Server, Router or whatever a Serial Console features 
+		 to a LC-Display as primary Console Output (Grub,Linux,...)
+----------------------------------------------------------------------------*/
+/*	LCD-Pin         	connected to
+	'1        /RESET	PortC.0
+	'2        /RD   	PortC.1
+	'3        /WR		PortC.2
+	'4        /CS		PortC.3
+	'5        A0		PortC.4
+	'6-13     DB0-DB7	PortA
+	'14       VCC 		+5V
+	'15       VSS 		GND
+	'16       VCTL		+5V<-3,9kOhm-X-390Ohm->GND
+	'17	  A		+5V<-75Ohm
+	'18	  K		GND */
+/* x |= (1 << Bitnummer);  // Hiermit wird ein Bit in x gesetzt
+   x &= ~(1 << Bitnummer); // Hiermit wird ein Bit in x geloescht */
+
+/* CPU/Quarz Frequenz in Mhz, wenn nicht im Makefile definiert */
+#ifndef F_CPU
+  #define F_CPU	8000000UL	// 8MHz interner Oszillator
+#endif
+
+#define UART_BAUD_RATE	19200	// 19200 Baud für UART
+
+/* notwendige Header einbinden */
+#include <avr/io.h>		// Ports,Pins,etc.
+#include <avr/interrupt.h>	// Interrupts
+#include <stdio.h>	     	// sprintf(),
+#include <stdlib.h>     	// rand(), atoi()
+#include <string.h>		// strings handeln
+#include <util/delay.h>		// _delay_ms()
+#include <inttypes.h>
+#include "sed1335.h"		// grafik LCD
+#include "uart.h"		// RS-232
+
+#define CLK_IN		7 	// for the keyboard connections (PORTC pin7)
+#define CLK_PORT	PORTC 	// for the keyboard connections (PORTC pin7)
+#define DATA_IN		4 	// for the keyboard connections (PORTB, pin4)
+#define DATA_PORT	PORTB 	// for the keyboard connections (PORTB, pin4)
+
+typedef unsigned char u08;
+
+
+const uint8_t scancodes[] PROGMEM=  {	//unshifted characters list converting scancodes to ASCII
+	'0',//00	
+	'0',//01				F9
+	'0',//02				
+	0x18,//03				F5		used to replace "ctrl+x"  (CAN)
+	0x03,//04				F3		used to replace "ctrl+C"  (ETX)
+	0x04,//05				F1		used to replace "crtl+D"  (EOT)
+	0x1A,//06				F2		used to replace "ctrl+Z"  (SUB)
+	'0',//07				F12
+	'0',//08				
+	'0',//09				F10
+	'0',//0A				F8
+	'0',//0B				F6
+	'0',//0C				F4
+	9,//0D 					TAB
+	'`',//0E
+	'0',//0F	
+	'0',//10	
+	'0',//11				left ALT
+	'0',//12				left SHIFT
+	'0',//13	
+	'0',//14				left CTRL
+	'q',//15
+	'1',//16 
+	'0',//17	
+	'0',//18	
+	'0',//19
+	'z',//1A
+	's',//1B 
+	'a',//1C 
+	'w',//1D 
+	'2',//1E 
+	'0',//1F
+	'0',//20
+	'c',//21 
+	'x',//22
+	'd',//23 
+	'e',//24
+	'4',//25
+	'3',//26
+	'0',//27
+	'0',//28
+	' ',//29 
+	'v',//2A 
+	'f',//2B
+	't',//2C 
+	'r',//2D
+	'5',//2E
+	'0',//2f
+	'0',//30
+	'n',//31
+	'b',//32
+	'h',//33
+	'g',//34 
+	'y',//35
+	'6',//36
+	'0',//37
+	'0',//38
+	',',//39 
+	'm',//3A
+	'j',//3B
+	'u',//3C 
+	'7',//3D
+	'8',//3E
+	'0',//3f
+	'0',//40
+	',',//41
+	'k',//42 
+	'i',//43
+	'o',//44 
+	'0',//45
+	'9',//46
+	'0',//47
+	'0',//48
+	'.',//49 
+	'/',//4A
+	'l',//4B
+	';',//4C
+	'p',//4D
+	'-',//4E
+	'0',//4f
+	'0',//50
+	'0',//51
+	'\'',//52 
+	'0',//53
+	'[',//54
+	'=',//55 
+	'0',//56
+	'0',//57
+	'0',//58				Caps Lock
+	'0',//59
+	0x0A,//5A 				Using LINEFEED here for "return"
+	']',//5B
+	'0',//5C
+	'\\',//5D
+	'0',//5E
+	'0',//5F
+	'0',//60
+	'<',//61 
+	'0',//62
+	'0',//63
+	'0',//64
+	'0',//65
+	8 ,//66 				Backspace
+	'0',//67
+	'0',//68
+	'1',//69 
+	'0',//6A
+	'4',//6B
+	'7',//6C
+	'0',//6d
+	'0',//6e
+	'0',//6f
+	'0',//70
+	'.',//71
+	'2',//72 
+	'5',//73
+	'6',//74
+	'8',//75
+	0x1B,//76				ESC
+	'0',//77				Num Lock
+	'0',//78				F11
+	'+',//79 
+	'3',//7A
+	'-',//7B
+	'*',//7C
+	'9',//7D
+	'0',//7E
+	'0',//80
+	'0',//81
+	'0',//82
+	'0',//83				F7
+
+};
+
+
+
+
+const uint8_t shifted_scancodes[] PROGMEM=  {		//shifted characters list converting scancodes to ASCII
+	'0',//00	
+	'0',//01				F9
+	'0',//02				
+	0x18,//03				F5		used to replace "ctrl+x"  (CAN)
+	0x03,//04				F3		used to replace "ctrl+C"  (ETX)
+	0x04,//05				F1		used to replace "crtl+D"  (EOT)
+	0x1A,//06				F2		used to replace "ctrl+Z"  (SUB)
+	'0',//07				F12
+	'0',//08				
+	'0',//09				F10
+	'0',//0A				F8
+	'0',//0B				F6
+	'0',//0C				F4
+	9,//0D 					TAB
+	'`',//0E
+	'0',//0F	
+	'0',//10	
+	'0',//11				left ALT
+	'0',//12				left SHIFT
+	'0',//13	
+	'0',//14				left CTRL
+	'Q',//15
+	'!',//16 
+	'0',//17	
+	'0',//18	
+	'0',//19
+	'Z',//1A
+	'S',//1B 
+	'A',//1C 
+	'W',//1D 
+	'@',//1E 
+	'0',//1F
+	'0',//20
+	'C',//21 
+	'X',//22
+	'D',//23 
+	'E',//24
+	'$',//25
+	'#',//26
+	'0',//27
+	'0',//28
+	' ',//29 
+	'V',//2A 
+	'F',//2B
+	'T',//2C 
+	'R',//2D
+	'%',//2E
+	'0',//2f
+	'0',//30
+	'N',//31
+	'B',//32
+	'H',//33
+	'G',//34 
+	'Y',//35
+	'^',//36
+	'0',//37
+	'0',//38
+	',',//39 				//
+	'M',//3A
+	'J',//3B
+	'U',//3C 
+	'&',//3D
+	'*',//3E
+	'0',//3f
+	'0',//40
+	'<',//41
+	'K',//42 
+	'I',//43
+	'O',//44 
+	'0',//45
+	'(',//46
+	'0',//47
+	'0',//48
+	'>',//49 
+	'?',//4A
+	'L',//4B
+	':',//4C
+	'P',//4D
+	'_',//4E
+	'0',//4f
+	'0',//50
+	'0',//51
+	'\'',//52 				//
+	'0',//53
+	'{',//54
+	'+',//55 
+	'0',//56
+	'0',//57
+	'0',//58				Caps Lock
+	'0',//59
+	0x0A,//5A 				Using LINEFEED here for "return" 
+	'}',//5B
+	'0',//5C
+	'|',//5D
+	'0',//5E
+	'0',//5F
+	'0',//60
+	'<',//61 				//
+	'0',//62
+	'0',//63
+	'0',//64
+	'0',//65
+	8 ,//66  				Backspace
+	'0',//67
+	'0',//68
+	'1',//69 
+	'0',//6A
+	'4',//6B
+	'7',//6C
+	'0',//6d
+	'0',//6e
+	'0',//6f
+	'0',//70
+	'.',//71
+	'2',//72 
+	'5',//73
+	'6',//74
+	'8',//75
+	0x1B,//76				ESC
+	'0',//77				Num Lock
+	'0',//78				F11
+	'+',//79 
+	'3',//7A
+	'-',//7B
+	'*',//7C
+	'9',//7D
+	'0',//7E
+	'0',//80
+	'0',//81
+	'0',//82
+	'0',//83				F7
+
+};
+ 
+
+/* Delay/Sleep Funktion */
+void delay_ms(int ms)
+{
+  int t;
+  for(t=0; t<=ms; t++)
+	_delay_ms(1); 
+}
+
+/* Tastendruecke */
+u08 getkey(void)		//simplified keyboatd getkey routine
+{
+PORTB |= (1 << 3);
+    u08 incoming_byte;		//declare variable
+    incoming_byte = 0;		//reset variable
+
+	while( (PINB & (1<<CLK_IN)) == 0); //Wait for clock line to go high
+	for(int index = 0 ; index < 10 ; index++)	//for the start bit to the stop bit, do the following:
+	{
+		while( (PINB & (1<<CLK_IN)) ); //Wait for clock line to go low, telling you data is clean
+
+
+		if(index<8)	//only counts the start bit and data bits, parity (9) and stop bit (10) are ignored by this
+		{
+			/*
+			Pre-rotate the variable: incoming_byte starts as 00000000 in binary,
+			so we can rotate here to keep the zeros when data isn't '1'
+			*/
+			incoming_byte >>= 1; 	//Rotate incoming_byte  -->  left to right
+			
+			if( PINC & (1<<DATA_IN) ) //If the data is '1'
+			{
+			/*
+			Record any incoming data. by ORing it with the most significant bit in incoming_Byte.
+			This will be shifted on the next iteration of the for loop so it will not be overwritten.
+			*/
+				incoming_byte |= 0x80; 
+			}
+		}
+		
+		while( (PINB & (1<<CLK_IN)) == 0); //Wait for clock line to go high again
+	}
+	
+	/*
+	The parity bit and stop bits are caught by the for loop above and ignored.
+	*/
+PORTB &= ~(1 << 3);
+	return(incoming_byte);		//return the variable 
+}
+
+
+/* Hauptprogramm */
+int main(void)
+{
+  unsigned int address;						//Cursor-Adresse des LCDs
+  char column=0;						//Cursor Spalte, 0-39
+  char row=0;							//Cursor Reihe,  0-28
+
+  unsigned int uart_in;						//UART Zeichenspeicher
+  char buffer[7];						//UART Stringspeicher
+
+u08 var;					//varaible grabs scancode from keyboard
+u08 s_flag=0;				//Shift key flag
+u08 c_flag=0;				//Caps Lock flag
+u08 buff;					//variable stores keyboard character after converted to ASCII
+//DDRB= 0xef;						//PORTB.4 = input
+//PORTB=0;						//with no pullups
+//DDRC= 0x7f;						//PORTC.7 = input
+//PORTC=0;						//with no pullups
+
+    /* initialisiere LCD */
+    GLCD_Initialize();
+    GLCD_ClearText();
+    GLCD_ClearGraphic();
+
+    /* initialisiere UART */
+    sei();											//enable interrupt, UART-lib is int controlled
+    uart_init( UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU) ); 	//initialisieren mit Baud und CPU-MHz
+
+    GLCD_TextGoTo( column, row ); column=0; row+=1;;
+    GLCD_WriteText( "AtMega16 SerCon->gLCD is up and running!" );
+    uart_puts_P( "UART0 is up and running!\n\r" );
+
+
+    /* Hauptschleife */
+    for( ;; )
+    {
+	//uart_putc( '!' );
+        uart_in = uart_getc();					//Daten von UART empfangen
+        if( uart_in & UART_NO_DATA )				//keine Daten von UART verfügbar
+        {
+//		GLCD_TextGoTo(0,25);
+//		GLCD_WriteText( "UART-NoData" );
+        }
+        else
+        {
+	    if( uart_in & UART_FRAME_ERROR )			//Rahmen-Fehler erkannt
+	    {
+		GLCD_TextGoTo( 0, 0 );
+		GLCD_WriteText( "UART Frame Error " );
+	    }
+	    if( uart_in & UART_OVERRUN_ERROR )			//...Über???? erkannt
+	    {
+		GLCD_TextGoTo( 0, 0 );
+		GLCD_WriteText( "UART Overrun Error " );
+	    }
+	    if( uart_in & UART_BUFFER_OVERFLOW )		//...Überlauf erkannt
+	    {
+		GLCD_TextGoTo( 0, 0 );
+		GLCD_WriteText( "UART Buffer overflow " );
+	    }
+
+	    /* Hauptteil der Terminal-Ausgabe*/
+	    if( row > 27 )					//wenn in letzter Zeile...
+	    {
+		GLCD_Scroll();
+		column=0;
+		row--;
+		GLCD_TextGoTo( column, row );
+	    }
+	    else if( column > 39 )				//bei Ende der Zeile...
+	    {
+		column=2;
+		row++;
+		GLCD_TextGoTo( column, row );
+	    }
+	    else
+		GLCD_TextGoTo( column, row );			//Cursor positionieren
+
+	    switch( uart_in )					//empf. Zeichen prüfen
+	    {
+		case 0xd:	column=0;
+				row++;
+			break;
+		default:	GLCD_TextGoTo( column++, row );
+				sprintf(buffer, "%c", uart_in);
+				GLCD_WriteText( buffer );
+			break;
+	    }
+
+/*
+	    GLCD_TextGoTo( 0, 0 );
+	    GLCD_WriteText( "UART_in: " );
+	    sprintf(buffer, "0x%x  ", uart_in);
+	    GLCD_WriteText( buffer );
+*/
+	if( (PINB & (1<<CLK_IN)) == 0) //Check to see if clock line is low
+	{
+	  GLCD_WriteText( "(PINB & (1<<CLK_IN)) == 0" );
+
+	    var=getkey();		//scan the keyboard and load the resut into "Var"
+	    //delay_ms(10); //timerPause(10);	//this pause helps with timing
+	    
+	    if (var!=0xf0)		//if the scancode isn't "end of character" do the following:
+	    {
+		if (var== 0x83)		//if "F7"
+		{
+		    //This serves as a template for using the function keys. 
+		    //remove the following two line and put your code in here:
+//		    rprintfInit(lcdDataWrite);	//switch back to printing on the LCD
+//		    rprintf("%d",column);	//print the column number 
+		}	
+		else if (var== 0x01)		//if F9
+		{
+//		rprintfInit(lcdDataWrite);	//switch back to printing on the LCD
+//		    for(int row_buffer=0; row_buffer<4;row_buffer++)	//for each row (starting at the first row)
+//		    {
+//			for( int column_buffer=0;column_buffer<21;column_buffer++)	//print each character in order (starting at the first character)
+//			{
+//			    rprintf("%c",screen_buffer[row_buffer][column_buffer]);	//this is the print to screen command
+//			}
+//		    }					
+		}	
+		else if (var== 0x09)		//if F10
+		{
+//		    rprintfInit(lcdDataWrite);	//switch back to printing on the LCD
+//		    lcdClear();			//clear screen
+//		    lcdHome();			//go to home position (0,0)
+		}	
+		else if (var== 0x59 || var == 0x12)	//if shifted character
+		{
+//		    s_flag=1;			//set flag
+		}
+		else if (var== 0x58)		//if Caps Lock character
+		{
+//		    c_flag=!c_flag;		//turn caps lock either on or off based on last state
+		}	
+		else if (var== 0x66 )		//if backspace ("delete" not yet supported as it is an extended key)
+		{
+//		    address--;			//take off character count to correct line position on LCD
+//		    column--;
+//		    rprintfInit(uartSendByte);	//send backspace key to UART
+
+//		    // This is formatting for the 4-line LCD
+//		    if (column == 0)		//if first column			
+//		    {
+//			row--;			//go to the previous row
+//			if (row<0)		//if you are on the top row...
+//			{		
+//			    row=3;		//go to bottom row
+//			}
+//			lcdGotoXY(20,row);	//send position command to LCD
+//			column = 20;		//reset column counter
+//		    }
+    
+//		    lcdControlWrite(0x10);	//shift cursor to the left (backspace)
+//		    rprintfInit(uartSendByte);	//send backspace key to UART:
+//		    buff=pgm_read_byte(&scancodes[var]);	//get ASCII value
+
+//		    rprintf("%c",buff);		//print to UART
+//		    buff=0x00;			//reset character
+//		    rprintfInit(lcdDataWrite);	//switch back to printing on the LCD
+		}	
+		else				//if normal key
+		{
+		    if (s_flag==1 || c_flag==1)	//see if it is shifted or caps lock
+		    {				//if so, 
+			buff=pgm_read_byte(&shifted_scancodes[var]);	//look up ASCII
+			s_flag=0;		//reset the "shifted" flag
+		    }
+		    else			//otherwise its not a shifted key
+			buff=pgm_read_byte(&scancodes[var]);	//get ASCII code for value
+		    if (address<79)		//if not the end of the screen
+		    {
+//			if (column >=30 )	//if at the end of the screen
+//			{
+//			    row++;		//go to the next row
+//			    if (row>3)		//if on the last row, 
+//			    {
+//				row=0;		//go to the first row
+//			    }
+//			    lcdGotoXY(0,row);	//send LCD command for position
+//			    column = 0;		//reset column counter
+//			}	
+//			if (buff==0x0A)		//if at the end of the screen
+//			{
+//			    //row++;		//go to the next row
+//			    if (row>3)		//if on the last row, 
+//			    {
+//				row=0;		//go to the first row
+//			    }
+//			    lcdGotoXY(0,row);	//send LCD command for position
+//			    column = 0;		//reset column counter
+//			    rprintfInit(uartSendByte);	//get ready to print to the UART
+			    // *Based on which shell you are using, different commands here work better,
+			    // Some shells prefer carriage return some like linefeed, and some like both.
+//			    rprintf("\r");	//print CR character to UART
+//			    buff=0x00;		//reset character
+//			    lcdClear();		//clear screen
+//			    lcdHome();		//go to home position (0,0)
+//			}	
+		
+			sprintf(buffer, "%c", buff);
+			uart_puts( buffer );
+//			rprintfInit(uartSendByte);	//get ready to print to the UART
+//			rprintf("%c",buff);		//print character to UART
+//			rprintfInit(lcdDataWrite);	//switch back to printing on the LCD
+		
+			if (buff!=0x0A )	//don't print weird character from "enter" button
+			{
+			//Do nothing in here for now, can be handled better later	
+			}
+		    }
+		    else			//if end of the screen, clear screen and start at top left position
+		    {
+//			    lcdClear();		//clear screen
+//			    lcdHome();		//go to home position (0,0)
+//			    address = 0;	//reset address counter
+//			    column = 0;		//reset column counter
+//			    row = 0;		//reset row counter
+		    }
+			
+		}//end else (normal key)
+	    }//end if var != 0xf0 (character sent command)
+	}//end if clk line goes low
+
+        }//if(uart_in &UART_NO_DATA)
+    }//for(;;)
+    
+}//main(void)
